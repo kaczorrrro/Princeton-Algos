@@ -8,9 +8,6 @@ public class Percolation {
     private final int topGroup;
 
     public Percolation(int n) {                // create n-by-n grid, with all sites blocked
-        if (n <= 0)
-            throw new IllegalArgumentException();
-
         this.n = n;
         grid = new boolean[n][n];
         unionFind = new WeightedQuickUnionUF(n*n+1);   // + 1 for extra  top
