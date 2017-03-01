@@ -4,14 +4,19 @@ public class Percolation {
     private boolean[][] grid;
     private int n;
     private int openCount = 0;
-    private WeightedQuickUnionUF unionFind;
-    private final int topGroup;
+    private WeightedQuickUnionUF unionFind, unionFindExact;
+    private final int topGroup, bottomGroup;
 
     public Percolation(int n) {                // create n-by-n grid, with all sites blocked
+        if (n <= 0)
+            throw new IllegalArgumentException();
+
         this.n = n;
         grid = new boolean[n][n];
-        unionFind = new WeightedQuickUnionUF(n*n+1);   // + 1 for extra  top
+        unionFind = new WeightedQuickUnionUF(n*n+2);   // + 1 for extra  top, +1 for bottom
+        unionFindExact = new WeightedQuickUnionUF(n*n+1);   // + 1 for extra  top
         topGroup = n*n;
+        bottomGroup = n*n+1;
     }
 
     public void open(int row, int col) {    // open site (row, col) if it is not open already
@@ -32,14 +37,7 @@ public class Percolation {
         if (!isOpen(row, col))
             return false;
 
-        return unionFind.connected(toIndex(row, col), topGroup);
-//        for (int i=1;i<=n;i++) {
-//            if (, toIndex(1, i))) {
-//                //System.out.printf("%d %d is connected to %d %d\n", row, col, 1 ,i);
-//                return true;
-//            }
-//        }
-//        return false;
+        return unionFindExact.connected(toIndex(row, col), topGroup);
     }
 
     public int numberOfOpenSites()       // number of open sites
@@ -49,10 +47,7 @@ public class Percolation {
 
     public boolean percolates()              // does the system percolate?
     {
-        for (int i=1;i<=n;i++)
-            if (isFull(n,i))
-                return true;
-        return false;
+        return unionFind.connected(topGroup, bottomGroup);
     }
 
     private void updateUnionFind(int row, int col){
@@ -68,14 +63,21 @@ public class Percolation {
 
             if(row1 < 1) {
                 unionFind.union(toIndex(row, col), topGroup);
+                unionFindExact.union(toIndex(row, col), topGroup);
                 continue;
             }
 
-            if (col1 < 1 || row1 > n || col1 > n)
+            if(row1 > n) {
+                unionFind.union(toIndex(row, col), bottomGroup);
+                continue;
+            }
+
+            if (col1 < 1  || col1 > n)
                 continue;
 
-            if (isOpen(row1, col1)) {
+            if (isOpen(row1, col1) && !unionFindExact.connected(toIndex(row, col), toIndex(row1, col1))) {
                 unionFind.union(toIndex(row, col), toIndex(row1, col1));
+                unionFindExact.union(toIndex(row, col), toIndex(row1, col1));
                 //System.out.printf("%d %d unioned to %d %d\n", row, col, 1 ,i);
             }
         }

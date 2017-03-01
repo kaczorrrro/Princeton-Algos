@@ -11,10 +11,13 @@ public class PercolationStats {
 
     public PercolationStats(int n, int trials)    // perform trials independent experiments on an n-by-n grid
     {
-        this.t = trials;
-        results = new double[n];
+        if (trials <= 0 )
+            throw new IllegalArgumentException();
 
-        for (int i=0;i<n;i++){
+        this.t = trials;
+        results = new double[trials];
+
+        for (int i=0;i<trials;i++){
             Percolation p = new Percolation(n);
             while (!p.percolates()){
                 int row = StdRandom.uniform(n)+1; // can this return 0 - lol, yes
