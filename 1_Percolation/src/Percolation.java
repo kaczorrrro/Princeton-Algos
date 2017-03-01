@@ -6,6 +6,7 @@ public class Percolation {
     private int openCount = 0;
     private WeightedQuickUnionUF unionFind;
     private final int topGroup;
+    private boolean targetReached = false;
 
     public Percolation(int n) {                // create n-by-n grid, with all sites blocked
         if (n <= 0)
@@ -52,9 +53,20 @@ public class Percolation {
 
     public boolean percolates()              // does the system percolate?
     {
-        for (int i=1;i<=n;i++)
-            if (isFull(n,i))
+        if (targetReached)
+            return true;
+        for (int i=1;i<=n;i++){
+            if (i>1 && isOpen(n,i-1))   //if last one was opened and it didn't percorelate this one can't percorelate too
+                continue;
+            if (i<n && !isOpen(n,i+1) && !isOpen(n-1,i))   //if last one was opened and it didn't percorelate this one can't percorelate too
+                continue;
+
+            if (isFull(n,i)) {
+                targetReached=true;
                 return true;
+            }
+        }
+
         return false;
     }
 
@@ -77,7 +89,7 @@ public class Percolation {
             if (col1 < 1 || row1 > n || col1 > n)
                 continue;
 
-            if (isOpen(row1, col1)) {
+            if (isOpen(row1, col1) && !unionFind.connected(toIndex(row, col), toIndex(row1, col1))) {
                 unionFind.union(toIndex(row, col), toIndex(row1, col1));
                 //System.out.printf("%d %d unioned to %d %d\n", row, col, 1 ,i);
             }
